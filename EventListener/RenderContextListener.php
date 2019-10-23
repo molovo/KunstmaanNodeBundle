@@ -66,7 +66,7 @@ class RenderContextListener
                 $version = $request->get('version');
                 if (!empty($version) && is_numeric($version)) {
                     $nodeVersion = $this->em->getRepository('KunstmaanNodeBundle:NodeVersion')->find($version);
-                    if (!\is_null($nodeVersion)) {
+                    if (!is_null($nodeVersion)) {
                         $entity = $nodeVersion->getRef($this->em);
                     }
                 }
@@ -80,13 +80,13 @@ class RenderContextListener
                 'nodemenu' => $nodeMenu,
             );
 
-            if (\is_array($parameters) || $parameters instanceof \ArrayObject) {
+            if (is_array($parameters) || $parameters instanceof \ArrayObject) {
                 $parameters = array_merge($renderContext, (array) $parameters);
             } else {
                 $parameters = $renderContext;
             }
 
-            if (\is_array($response)) {
+            if (is_array($response)) {
                 // If the response is an array, merge with rendercontext
                 $parameters = array_merge($parameters, $response);
             }
@@ -95,8 +95,12 @@ class RenderContextListener
             //the SensioFrameworkExtraBundle kernel.view will handle everything else
             $event->setControllerResult((array) $parameters);
 
-            $template = new Template(array());
+            $template = new Template([]);
             $template->setTemplate($entity->getDefaultView());
+
+            $controllerBits = explode(':', $request->attributes->get('_controller'));
+            $action = array_pop($controllerBits);
+            $template->setOwner([join(':', $controllerBits), $action]);
 
             $request->attributes->set('_template', $template);
         }
